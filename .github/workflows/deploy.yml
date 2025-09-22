@@ -24,8 +24,9 @@ jobs:
         with:
           credentials_json: '${{ secrets.GCP_SA_KEY }}'
 
-      - name: 'Deploy to Firebase'
-        uses: 'google-github-actions/deploy-firebase@v0'
-        with:
-          project_id: 'flutter-chat-b3393'
-          only: 'functions'
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
+
+      - name: Deploy to Firebase
+        run: |
+          firebase deploy --project flutter-chat-b3393 --only functions
