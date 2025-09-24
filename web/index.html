@@ -31,8 +31,16 @@
 
   <title>seniors_companion_app</title>
   <link rel="manifest" href="manifest.json">
+
+  <!-- Google Sign-In Meta Tag -->
+  <meta name="google-signin-client_id" content="1015010025725-d04m4i8mmi0ig9hlkl8ps5dknksrr74d.apps.googleusercontent.com">
+
+  <!-- VAD (Voice Activity Detection) Libraries -->
+  <script src="assets/packages/vad/assets/ort.js"></script>
 </head>
 <body>
   <script src="flutter_bootstrap.js" async></script>
+  <script src="assets/packages/vad/assets/bundle.min.js" defer></script>
+  <script src="assets/packages/vad/assets/vad_web.js" defer></script>
 </body>
 </html>
