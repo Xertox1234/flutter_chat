@@ -32,7 +32,7 @@ class _ReminderSetupCardState extends State<ReminderSetupCard>
 
   int _timesPerDay = 1;
   List<TimeOfDay> _selectedTimes = [const TimeOfDay(hour: 8, minute: 0)];
-  ReminderType _selectedType = ReminderType.medication;
+  final ReminderType _selectedType = ReminderType.medication;
   bool _isLoading = false;
   String? _error;
 

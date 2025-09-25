@@ -2,9 +2,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:seniors_companion_app/firebase_options.dart';
-import 'package:seniors_companion_app/src/features/authentication/screens/login_screen.dart';
 import 'package:seniors_companion_app/src/features/authentication/services/auth_service.dart';
 import 'package:seniors_companion_app/src/features/chat/screens/chat_screen.dart';
+import 'package:seniors_companion_app/src/features/onboarding/screens/landing_screen.dart';
 import 'package:seniors_companion_app/src/features/reminders/screens/reminders_screen.dart';
 import 'package:seniors_companion_app/src/features/reminders/services/notification_service.dart';
 
@@ -29,7 +29,8 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Seniors Companion App',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF4F46E5)),
+        useMaterial3: true,
       ),
       home: const AuthWrapper(),
     );
@@ -52,7 +53,7 @@ class AuthWrapper extends StatelessWidget {
         if (snapshot.hasData) {
           return const MainScreen();
         }
-        return const LoginScreen();
+        return const LandingScreen();
       },
     );
   }

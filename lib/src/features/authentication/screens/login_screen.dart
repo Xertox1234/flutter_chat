@@ -120,12 +120,15 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  static const Color primaryColor = Color(0xFF4F46E5);
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Welcome Back'),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        backgroundColor: primaryColor,
+        foregroundColor: Colors.white,
       ),
       body: Center(
         child: SingleChildScrollView(
@@ -141,7 +144,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   const Icon(
                     Icons.chat_bubble,
                     size: 80,
-                    color: Colors.deepPurple,
+                    color: primaryColor,
                   ),
                   const SizedBox(height: 20),
                   const Text(
@@ -215,6 +218,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   ElevatedButton(
                     onPressed: _isLoading ? null : _signIn,
                     style: ElevatedButton.styleFrom(
+                      backgroundColor: primaryColor,
+                      foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                     ),
                     child: _isLoading
@@ -273,10 +278,10 @@ class _LoginScreenState extends State<LoginScreen> {
                         style: Theme.of(context).textTheme.bodyMedium,
                         children: [
                           const TextSpan(text: "Don't have an account? "),
-                          TextSpan(
+                          const TextSpan(
                             text: 'Sign Up',
                             style: TextStyle(
-                              color: Theme.of(context).colorScheme.primary,
+                              color: primaryColor,
                               fontWeight: FontWeight.bold,
                             ),
                           ),

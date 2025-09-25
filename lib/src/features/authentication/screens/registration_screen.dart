@@ -104,12 +104,15 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     }
   }
 
+  static const Color primaryColor = Color(0xFF4F46E5);
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Create Account'),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        backgroundColor: primaryColor,
+        foregroundColor: Colors.white,
       ),
       body: Center(
         child: SingleChildScrollView(
@@ -125,7 +128,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                   const Icon(
                     Icons.person_add,
                     size: 80,
-                    color: Colors.deepPurple,
+                    color: primaryColor,
                   ),
                   const SizedBox(height: 20),
                   const Text(
@@ -200,6 +203,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                   ElevatedButton(
                     onPressed: _isLoading ? null : _register,
                     style: ElevatedButton.styleFrom(
+                      backgroundColor: primaryColor,
+                      foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                     ),
                     child: _isLoading

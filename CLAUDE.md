@@ -7,12 +7,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 **Seniors Companion App** - A Flutter-based digital companion for seniors with AI-powered assistance, medication management, and appointment tracking.
 
 **Core Features:**
+- Professional SaaS landing page with pricing tiers
 - AI Chat with Google Gemini 2.5 Flash (multimodal: text, images, PDFs, audio)
+- Live voice chat with Gemini Live API (mobile/desktop only)
 - Medication reminder system with local notifications
 - Appointment scheduling and management
 - Firebase Authentication (Email/Password + Google Sign-In v7)
 - Cloud Firestore for real-time data persistence
-- Senior-friendly UI (large fonts 18px+, high contrast)
+- Senior-friendly UI (large fonts 18px+, high contrast, indigo color scheme #4F46E5)
 
 ## Key Commands
 
@@ -74,8 +76,36 @@ cd functions && npm run logs       # View logs
 lib/src/features/
 ├── authentication/      # Auth system with Firebase Auth v6 + Google Sign-In v7
 ├── chat/               # AI chat interface with flutter_ai_toolkit
+├── onboarding/         # Landing page with conversion-optimized design
 └── reminders/          # Medication & appointment management
+
+lib/src/services/
+├── ai_service.dart           # Main AI integration (Gemini 2.5 Flash)
+├── gemini_provider.dart      # LlmProvider for flutter_ai_toolkit
+└── live_voice_service.dart   # Gemini Live API for voice chat
 ```
+
+### Onboarding & Landing Page
+**Location:** `lib/src/features/onboarding/screens/landing_screen.dart`
+
+**Professional SaaS Landing Page Features:**
+- Fixed navigation bar with smooth scroll to sections
+- Hero section with split layout (text + hero image from Unsplash)
+- Features section (Voice Chat, Medication Reminders, Schedule Assistance)
+- Testimonials from seniors (Eleanor, George, Maria)
+- Pricing tiers:
+  - **Starter**: $59/year (basic features, 2 users)
+  - **Advanced**: $149/year (full features including voice, fall detection, AI search)
+- FAQ accordion with 5 common questions
+- Email capture section with success message
+- Professional footer with copyright
+- **Color Scheme**: Indigo primary (#4F46E5) throughout
+- **Responsive**: Mobile-first with breakpoints at 768px and 1024px
+
+**Navigation Flow:**
+- Unauthenticated users → LandingScreen
+- Authenticated users → Skip landing, go directly to MainScreen
+- Landing page routes to LoginScreen or RegistrationScreen
 
 ### Authentication System (Firebase Auth v6 + Google Sign-In v7)
 **Location:** `lib/src/features/authentication/`
@@ -89,6 +119,7 @@ lib/src/features/
     - Initialization pattern via `_ensureInitialized()`
 - `screens/login_screen.dart`: Form validation, loading states, error dialogs
 - `screens/registration_screen.dart`: Email regex, password confirmation (6 char min)
+- **Color Scheme**: All auth screens use indigo primary color (#4F46E5)
 
 **Error Codes Handled:**
 - Login: user-not-found, wrong-password, invalid-email, user-disabled, too-many-requests
@@ -110,6 +141,16 @@ lib/src/features/
 - Handles multimodal attachments using `DataPart` (not `InlineDataPart`)
 - Streams responses with `generateContentStream`
 - ChangeNotifier pattern for UI reactivity
+
+**live_voice_service.dart** - Gemini Live API for voice chat:
+- **Platform Support**: Mobile and desktop only (NOT web)
+- Uses Firebase AI SDK with `liveGenerativeModel()`
+- Bidirectional audio streaming with WebSocket-based `LiveSession`
+- Real-time speech recognition and synthesis
+- State management: idle, connecting, listening, processing, speaking, error
+- Audio capture: 16kHz PCM via `mic_stream` package
+- Audio playback: via `just_audio` package
+- **Web Detection**: Shows error message on web platform (platform not supported)
 
 **Speech-to-Text Prompt:**
 ```
@@ -158,11 +199,18 @@ Extracts medication info from images as JSON:
 **lib/main.dart**:
 1. Firebase initialization
 2. Notification service setup
-3. AuthWrapper checks auth state
+3. **AuthWrapper checks auth state**:
+   - Not authenticated → **LandingScreen** (professional SaaS page)
+   - Authenticated → **MainScreen** (main app)
 4. MainScreen with BottomNavigationBar:
    - Chat (AI assistant)
    - Medications (reminder list)
    - Appointments (reminder list with `showAppointments: true`)
+
+**Theme Configuration:**
+- Primary color: Indigo (#4F46E5)
+- Material Design 3 enabled
+- Consistent across all screens (landing, auth, main app)
 
 ### Firebase Configuration
 **Project:** flutter-chat-e4f96
@@ -201,7 +249,8 @@ Must match OAuth 2.0 Web Client from Google Cloud Console.
 
 **AI:**
 - `flutter_ai_toolkit: ^0.10.0` - Chat UI components
-- `google_generative_ai: ^0.4.7` - Gemini API client
+- `google_generative_ai: ^0.4.7` - Gemini API client (text/image)
+- `firebase_ai: ^3.3.0` - Gemini Live API (voice chat)
 - `firebase_remote_config: ^6.0.2` - Dynamic configuration
 
 **Notifications:**
@@ -209,9 +258,11 @@ Must match OAuth 2.0 Web Client from Google Cloud Console.
 - `timezone: ^0.9.4`
 - `permission_handler: ^11.3.0`
 
-**Media:**
+**Media & Audio:**
 - `image_picker: ^1.1.2` - Prescription photo capture
 - `cross_file: ^0.3.4+2` - File handling
+- `mic_stream: ^0.7.2` - Real-time microphone streaming (16kHz PCM)
+- `just_audio: ^0.9.40` - Audio playback for voice responses
 
 **Environment:**
 - Dart SDK: ^3.9.2
@@ -237,17 +288,62 @@ const String.fromEnvironment('GOOGLE_GENAI_API_KEY')
 - **Cause:** Firebase AI requires manual API enablement
 - **Solution:** Use `google_generative_ai` with direct API key (already implemented)
 
-**2. Speech-to-Text Not Working**
+**2. Firebase AI Live API Platform Support**
+- **Cause:** Live API uses WebSocket with platform-specific implementations
+- **Solution:** Web platform shows error message, use mobile/desktop for voice chat
+- **Implementation:** Platform check via `kIsWeb` in `live_voice_service.dart`
+
+**3. Firebase AI Live API Method Usage**
+- **Correct Methods:**
+  - `FirebaseAI.googleAI().liveGenerativeModel()` (not `liveModel()`)
+  - `systemInstruction` as method parameter (not in `LiveGenerationConfig`)
+  - `sendMediaStream()` for audio streaming (not `startMediaStream()`)
+  - `receive()` returns Stream (don't use `await` on it)
+- **Response Types:**
+  - `LiveServerResponse` with `LiveServerMessage` (sealed class)
+  - Pattern match on: `LiveServerContent`, `LiveServerToolCall`, `LiveServerToolCallCancellation`
+  - Use default case for `LiveServerSetupComplete` (not exported from package)
+
+**4. Speech-to-Text Not Working**
 - **Cause:** Generic prompts confuse the model
 - **Solution:** Use specific prompt (already implemented in `ai_service.dart`)
 
-**3. Multimodal Attachments Failing**
+**5. Multimodal Attachments Failing**
 - **Cause:** Wrong Part type (`InlineDataPart` vs `DataPart`)
 - **Solution:** `google_generative_ai` uses `DataPart(mimeType, bytes)`
 
-**4. flutter_ai_toolkit Compatibility**
+**6. flutter_ai_toolkit Compatibility**
 - Version 0.10.0 does NOT support `modelMessageStyle` parameter
 - Only `userMessageStyle` is supported in `LlmChatViewStyle`
+
+## Design System
+
+### Color Palette
+- **Primary**: Indigo (#4F46E5) - Used throughout app
+- **Secondary**: Green for success states, Orange for warnings
+- **Backgrounds**: White (#FFFFFF), Light gray (#F9FAFB), Dark gray (#1F2937)
+- **Text**: Dark gray (#111827), Medium gray (#6B7280), Light gray (#9CA3AF)
+
+### Typography
+- **Large Headers**: 42-56px (landing page)
+- **Medium Headers**: 32px (section titles)
+- **Body Text**: 18-22px (senior-friendly)
+- **Small Text**: 14-16px (captions, footnotes)
+- **Font Weight**: 400 (normal), 600 (semibold), 700 (bold), 800 (extrabold), 900 (black)
+
+### Spacing
+- **Sections**: 80px vertical padding
+- **Cards**: 24-32px padding
+- **Elements**: 16-24px spacing between major elements
+- **Touch Targets**: Minimum 48x48px for senior accessibility
+
+### Landing Page Design Patterns
+- Fixed navigation bar with smooth scroll
+- Hero sections with full viewport height
+- Alternating white/gray backgrounds for sections
+- Card-based layouts with subtle shadows
+- Accordion FAQs with smooth animations
+- Email capture with inline success messages
 
 ## Flutter Best Practices (Enforced)
 
@@ -281,6 +377,7 @@ const String.fromEnvironment('GOOGLE_GENAI_API_KEY')
 
 ### Material 3 Updates
 - Switch: Use `activeTrackColor` (not deprecated `activeColor`)
+- Color opacity: Use `.withValues(alpha: 0.5)` (not `.withOpacity(0.5)`)
 - Reminder model: `scheduledTime` (not `scheduledDate`), `description` (not `notes`)
 - Chat view: `Future<Widget>` (not `Future<LlmChatView>`)
 

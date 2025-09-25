@@ -114,12 +114,12 @@ class AuthService {
         // For mobile platforms, use Google Sign-In v7
         await _ensureInitialized();
 
-        final GoogleSignInAccount? googleUser = await _googleSignIn.authenticate();
+        final GoogleSignInAccount googleUser = await _googleSignIn.authenticate();
         if (googleUser == null) {
           return (null, 'Google sign-in was cancelled.');
         }
 
-        final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+        final GoogleSignInAuthentication googleAuth = googleUser.authentication;
         final AuthCredential credential = GoogleAuthProvider.credential(
           idToken: googleAuth.idToken,
         );
